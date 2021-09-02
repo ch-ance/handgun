@@ -1,7 +1,7 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useReducer } from "react";
 import { ReducerState } from "react";
-
+import Stungun from "./stungun/dist";
 type Message = {
   from: string;
   body: string;
@@ -19,6 +19,18 @@ const reducer = (state: { messages: Message[] }, message: Message) => {
 
 function App() {
   const [state, dispatch] = useReducer(reducer, initialState);
+
+  const stungun = new Stungun(process.env.REACT_APP_STUNGUN_API_KEY);
+
+  useEffect(() => {
+    (async () => {
+      const data = await stungun.get("chat-messages").on((message: string) => {
+        console.log(message);
+      });
+
+      console.log(data);
+    })();
+  }, []);
   return (
     <div>
       <h1>handgun messages</h1>

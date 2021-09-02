@@ -1,0 +1,16 @@
+{
+  "name": "stungun-server",
+  "version": "0.0.09022021",
+  "description": "modified peerjs server to connect hundreds of peers together in the same mesh network",
+  "main": "index.js",
+  "author": "Chance Embrey-Farquhar",
+  "license": "MIT",
+  "private": false,
+  "dependencies": {
+    "gun": "^0.2020.1234",
+    "peer": "^0.6.1"
+  },
+  "scripts": {
+    "start": "node index.js"
+  }
+}
