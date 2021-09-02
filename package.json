@@ -1,20 +1,43 @@
 {
-  "name": "handgun",
-  "version": "0.0.20210828",
-  "description": "highly scalable webrtc mesh network for data channels",
-  "main": "index.js",
-  "repository": "https://github.com/fluidi-beep/handgun.git",
-  "author": "Chance Halo Embrey-Farquhar",
-  "license": "MIT",
-  "private": false,
+  "name": "group-messenger",
+  "version": "0.1.0",
+  "private": true,
   "dependencies": {
-    "gun": "^0.2020.1234",
-    "peerjs": "^1.3.2",
-    "typescript": "^4.4.2"
+    "@testing-library/jest-dom": "^5.11.4",
+    "@testing-library/react": "^11.1.0",
+    "@testing-library/user-event": "^12.1.10",
+    "@types/jest": "^26.0.15",
+    "@types/node": "^12.0.0",
+    "@types/react": "^17.0.0",
+    "@types/react-dom": "^17.0.0",
+    "react": "^17.0.2",
+    "react-dom": "^17.0.2",
+    "react-scripts": "4.0.3",
+    "typescript": "^4.1.2",
+    "web-vitals": "^1.0.1"
   },
-  "files": ["dist/index.js"],
-  "devDependencies": {},
   "scripts": {
-    "dev": "tsc-watch src/index.ts --outDir ./dist"
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject"
+  },
+  "eslintConfig": {
+    "extends": [
+      "react-app",
+      "react-app/jest"
+    ]
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
   }
 }

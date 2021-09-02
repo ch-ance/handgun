@@ -1,17 +1,46 @@
-### What is this?
-Handgun is a way of distributing data peer-to-peer using webrtc. 
+# Getting Started with Create React App
 
-### Different Methodologies
-I can see two possible design systems that would vary in difficulty/simplicity and performance. <br/>
-Both methods involve every peer on the network being ultimately connected through a series of peers, but they differ in performance.
+This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
-#### Application Targeted Grouping
-Peers using the same application are more closely grouped together. This means that latency would be reduced when peers are talking to eachother over the same app, which is definitely the more likely scenario anyways. 
+## Available Scripts
 
-#### Global tree
-Peers' positions in the tree are only determined by what will give them the best performance when communicating with any random peer on average. This is probably easier to implement, but I'm not sure how "real-time" things get when you have millions of peers connected. 
+In the project directory, you can run:
 
-### Helpful articles
-This blog post talks about some of the challenges with building a large-scale webrtc mesh network.<br/>
-https://bloggeek.me/webrtc-p2p-mesh/
+### `yarn start`
 
+Runs the app in the development mode.\
+Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+
+The page will reload if you make edits.\
+You will also see any lint errors in the console.
+
+### `yarn test`
+
+Launches the test runner in the interactive watch mode.\
+See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+
+### `yarn build`
+
+Builds the app for production to the `build` folder.\
+It correctly bundles React in production mode and optimizes the build for the best performance.
+
+The build is minified and the filenames include the hashes.\
+Your app is ready to be deployed!
+
+See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+
+### `yarn eject`
+
+**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+
+If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+
+Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
+
+You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
+
+## Learn More
+
+You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+
+To learn React, check out the [React documentation](https://reactjs.org/).
