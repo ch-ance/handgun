@@ -8,14 +8,10 @@
 */
 
 import Peer from "peerjs";
+import { v4 as uuidv4 } from "uuid";
 
 export interface StungunOptions {
   apiKey?: string;
-  peer?: Peer;
-  path?: string;
-  value?: any;
-  gun?: Stungun;
-  connection?: StungunConnection;
 }
 
 class Ack {
@@ -38,15 +34,15 @@ class Stungun {
   gun?: Stungun;
   connection?: StungunConnection;
 
-  constructor(opts?: StungunOptions) {
+  constructor(opts?: StungunOptions, gun?: Stungun) {
     this.apiKey = opts?.apiKey || "";
     this.peer =
-      opts?.peer ||
+      gun?.peer ||
       new Peer({ host: "localhost", port: 9000, path: "/stungun" });
-    this.path = opts?.path || "";
-    this.value = opts?.value;
-    this.gun = opts?.gun;
-    this.connection = opts?.connection || new StungunConnection(this.peer);
+    this.path = gun?.path || "";
+    this.value = gun?.value;
+    this.gun = gun;
+    this.connection = gun?.connection || new StungunConnection(this.peer);
   }
 
   /*
@@ -57,7 +53,7 @@ class Stungun {
     const _this = { ...this };
     _this.path = _this.path + key;
 
-    return new Stungun({ gun: _this });
+    return new Stungun({}, _this);
   }
 
   /*
@@ -81,9 +77,9 @@ class Stungun {
       throw new Error("path not provided. use `stungun.get(key)` first");
     } else {
       this.gun.value = value;
-      // const ack = this.setValue();
+      const ack = await this.setValue();
       if (cb) {
-        // cb(ack);
+        cb(ack);
       }
     }
   }
@@ -91,11 +87,19 @@ class Stungun {
   /*
     Grabs the value(s) at the key on the path. Performs the callback over the value(s).
   */
-  async once(cb: (value: any) => void) {
+  async once(cb: (value: any, key: string) => void) {
     this.value = await this.getValue();
-    Object.keys(this.value).forEach((_value) => {
-      cb(_value);
+    if (!this.value) return null;
+    Object.keys(this.value).forEach((key) => {
+      cb(this.value[key], key);
     });
+  }
+
+  /*
+    Grabs the value(s) at the key on the path, and subscribes to any changes, performing the callback each time a value comes in.
+  */
+  async on(cb: (value: any, key: string) => void) {
+    // this.value =
   }
 
   private async getValue() {
@@ -113,25 +117,31 @@ class Stungun {
       if (!this.gun?.path || !this.gun?.value) {
         reject(new Ack(Date.now(), false));
       } else {
-        localStorage.setItem(
-          this.gun.path,
-          JSON.stringify({ [this.gun.value]: this.gun.value })
-        );
+        const value =
+          typeof this.gun.value === "object"
+            ? JSON.stringify(this.gun.value)
+            : JSON.stringify({ [uuidv4()]: this.gun.value });
+
+        localStorage.setItem(this.gun.path, value);
         resolve(new Ack(Date.now(), true));
       }
     });
   }
 
-  // private async setValue(): Promise<Ack> {
-  //   return new Promise(async (resolve, reject) => {
-  //     if (!this.gun?.path || !this.gun?.value) {
-  //       reject(new Ack(Date.now(), false));
-  //     } else {
-  //       const values = {};
-  //       // this.once(value => values[value])
-  //     }
-  //   });
-  // }
+  private async setValue(): Promise<Ack> {
+    return new Promise(async (resolve, reject) => {
+      if (!this.gun?.path || !this.gun?.value) {
+        reject(new Ack(Date.now(), false));
+      } else {
+        // we get the value(s) at the path, and then append our new value
+        const values = Object.create({});
+        await this.once((value, key) => (values[key] = value));
+        values[uuidv4()] = this.gun.value;
+        this.put(values);
+        resolve(new Ack(Date.now(), true));
+      }
+    });
+  }
 }
 
 export default Stungun;
