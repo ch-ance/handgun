@@ -36,7 +36,7 @@ function App() {
   }, []);
 
   const sendMessage = async () => {
-    stungun.get("chat-messages").put(msgText, (ack) => console.log("ack", ack));
+    stungun.get("chat-messages").set(msgText, (ack) => console.log("ack", ack));
   };
   return (
     <div>
