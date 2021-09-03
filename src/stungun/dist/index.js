@@ -22,10 +22,8 @@ class Stungun {
     }
     async get(key) {
         this.chainData.path += key;
-        const opts = {
-            apiKey: this.apiKey,
-        };
-        return new Stungun(opts);
+        const opts = {};
+        return new ChainData_1.default(opts);
     }
     put(data) {
         if (!this.chainData.path) {

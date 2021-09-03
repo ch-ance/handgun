@@ -8,56 +8,100 @@
 */
 
 import Peer from "peerjs";
-import ChainData from "./ChainData";
 
-interface StungunOptions {
+export interface StungunOptions {
   apiKey?: string;
   peer?: Peer;
+  path?: string;
+  value?: any;
+  gun?: Stungun;
+  connection?: StungunConnection;
 }
+
+type Ack = {};
+
+class StungunConnection {
+  constructor(peer: Peer) {}
+}
+
 class Stungun {
   private apiKey: string;
   peer: Peer;
-  chainData: ChainData;
+  path: string;
+  value?: any;
+  gun?: Stungun;
+  connection?: StungunConnection;
 
-  constructor(opt: StungunOptions, chainData?: ChainData) {
-    this.apiKey = opt.apiKey || "";
+  constructor(opts?: StungunOptions) {
+    this.apiKey = opts?.apiKey || "";
     this.peer =
-      opt.peer || new Peer({ host: "localhost", port: 9000, path: "/stungun" });
-    this.chainData = chainData || new ChainData();
+      opts?.peer ||
+      new Peer({ host: "localhost", port: 9000, path: "/stungun" });
+    this.path = opts?.path || "";
+    this.value = opts?.value;
+    this.gun = opts?.gun;
+    this.connection = opts?.connection || new StungunConnection(this.peer);
   }
 
-  async get(key: string) {
-    this.chainData.path += key;
-    const opts: StungunOptions = {
-      apiKey: this.apiKey,
-    };
+  /*
+    Appends a key to the path. Returns a Stungun instance.
+  */
+  get(key: string) {
+    // How else can you copy an object? Object.create() doesn't transfer all of the properties, and `const _this = this` assigns by reference, mutating the original object
+    const _this = { ...this };
+    _this.path = _this.path + key;
 
-    return new Stungun(opts);
+    return new Stungun({ gun: _this });
   }
 
-  put(data: any) {
-    if (!this.chainData.path) {
+  async put(value: any, cb?: Ack) {
+    if (!this.gun?.path) {
       throw new Error("path not provided. please use 'stungun.get(key)' first");
+    } else {
+      console.log("this.gun.path:", this.gun.path);
+      this.gun.value = value;
+      const ack = await this.putValue();
+      console.log("ack", ack);
     }
-    console.log(this.chainData)
   }
 
-  once(cb: (item: any) => void) {
-    if (
-      typeof this.chainData.value === "object" &&
-      this.chainData.value !== null
-    ) {
-      // if there are multiple entries here (meaning the value is an object), perform the callback on each
-      Object.keys(this.chainData.value).forEach((value) => {
-        cb!(value);
+  async once(cb: (item: any) => void) {
+    this.value = await this.getValue();
+    if (typeof this.value === "object" && this.value !== null) {
+      // if there are multiple entries here (meaning the value is an object), perform the callback on each.
+      // does this make sense? should it always be an object? ({key: key})
+      Object.keys(this.value).forEach((value) => {
+        cb(value);
       });
     } else {
       // otherwise, perform the callback on the entry
-      cb(this.chainData.value);
+      cb(this.value);
     }
   }
 
-  private async getData(key: string) {}
+  private async getValue() {
+    return new Promise(async (resolve, reject) => {
+      if (!this.gun?.path) {
+        reject("no path. Need to use `.get(key)` first");
+      } else {
+        resolve(
+          await JSON.parse(localStorage.getItem(this.gun.path) as string)
+        );
+      }
+    });
+  }
+
+  private async putValue() {
+    return new Promise(async (resolve, reject) => {
+      if (!this.gun?.path || !this.gun?.value) {
+        reject("need path. use gun.get() first");
+      } else {
+        resolve(
+          localStorage.setItem(this.gun.path, JSON.stringify(this.gun.value))
+        );
+      }
+    });
+  }
 }
 
 export default Stungun;
