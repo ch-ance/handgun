@@ -1,12 +1,3 @@
-/*
-  we need a way to carry information over through chains, 
-  while not storing that data directly onto the Stungun instance.
-
-  This way, we can do `stungun.get('key').put('value');
-  and `.get('key')` doesn't get mutated for the next time we 
-  want to use Stungun.
-*/
-
 import Peer from "peerjs";
 import { v4 as uuidv4 } from "uuid";
 
