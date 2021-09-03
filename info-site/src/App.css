@@ -3,7 +3,7 @@
   font-size: 62.5%;
 }
 .app {
-  width: 150rem;
+  max-width: 150rem;
 }
 h1 {
   text-align: center;

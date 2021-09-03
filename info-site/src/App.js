@@ -75,9 +75,36 @@ function App() {
         and that our application requires up to 500kb/s for real-time
         communications.
         <br />
+        This lets us have mesh networks at a size of 5.
+        <br/>
+        Each node can have 10 total connections (5mb / 500kb), 5 to it's Higher mesh network, and 5 to its Lower mesh network.
+        <br/>
         <SecondGraph />
         Now we have one mesh network in the middle, with each node forming its
         own mesh network.
+        <br />
+        Nodes 1-5 can talk to eachother through one data connection.
+        <br />
+        Node 6 can talk to node 1 through 1 data connection, nodes 2-5 through
+        two data connections, and any other node through 3 data connections.
+        <br />
+        We can extrapolate this as much as we want.
+        <br />
+        I'm not very good at graph visualization, so I'm going to stop here.
+        Just know that in this scenario, each power of 5 nodes (5, 25, 125, 625,
+        etc) adds an additional hop that a node has to make to contact the
+        furthest-away-from-it-node.
+      </section>
+      <section>
+        <h2>In practice...</h2>
+        Of course, not every node in a real application will have the exact same bandwidth limitations.
+        <br/>
+        So, we check each node's bandwidth upon connection.
+        <br/>
+        Each node can connect to n nodes, where n is uploadSpeed / desiredAppTransferSpeed.
+        <br/>
+        Each app will have different parameters, and desiredAppTransferSpeed is one of those parameters that must be configured for an Application Network*.
+        <aside>*Application Network: Every peer connected to a particular Application.</aside>
       </section>
     </div>
   );

@@ -31,6 +31,7 @@ class Stungun {
         if (!this.chainData.path) {
             throw new Error("path not provided. please use 'stungun.get(key)' first");
         }
+        console.log(this.chainData);
     }
     once(cb) {
         if (typeof this.chainData.value === "object" &&

@@ -34,10 +34,12 @@ class Stungun {
 
     return new Stungun(opts);
   }
+
   put(data: any) {
     if (!this.chainData.path) {
       throw new Error("path not provided. please use 'stungun.get(key)' first");
     }
+    console.log(this.chainData)
   }
 
   once(cb: (item: any) => void) {

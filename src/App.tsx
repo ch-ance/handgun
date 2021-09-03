@@ -1,7 +1,6 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useReducer } from "react";
-import { ReducerState } from "react";
-import Stungun from "./stungun/src";
+import Stungun from "./stungun/dist";
 type Message = {
   from: string;
   body: string;
@@ -19,6 +18,7 @@ const reducer = (state: { messages: Message[] }, message: Message) => {
 
 function App() {
   const [state, dispatch] = useReducer(reducer, initialState);
+  const [msgText, setMsgText ] = useState("");
   const stungunOpts = {
     apiKey: process.env.REACT_APP_STUNGUN_API_KEY || "",
   };
@@ -29,13 +29,19 @@ function App() {
     // so that we can do async stuff in our useEffect
     (async () => {
       stungun.get("chat-messages").then((stungun) => stungun.once(console.log));
-      stungun.put("heylo");
+      console.log(stungun.put("heylo"))
     })();
     //
   }, []);
+
+  const sendMessage = async () => {
+
+  }
   return (
     <div>
       <h1>handgun messages</h1>
+      <input value={msgText} onChange={e => setMsgText(e.target.value)}/>
+      <button onClick={sendMessage}>send msg</button>
       <ul>
         {state.messages.map((msg) => {
           return (
