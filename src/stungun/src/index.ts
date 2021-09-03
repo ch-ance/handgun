@@ -30,7 +30,9 @@ class Stungun {
   private apiKey: string;
   peer: Peer;
   path: string;
+  // do we need to store `value` on the instance? Could it be replaced with local variables?
   value?: any;
+  graph?: any;
   gun?: Stungun;
   connection?: StungunConnection;
 
@@ -41,6 +43,7 @@ class Stungun {
       new Peer({ host: "localhost", port: 9000, path: "/stungun" });
     this.path = gun?.path || "";
     this.value = gun?.value;
+    this.graph = gun?.graph;
     this.gun = gun;
     this.connection = gun?.connection || new StungunConnection(this.peer);
   }
@@ -63,7 +66,6 @@ class Stungun {
     if (!this.gun?.path) {
       throw new Error("path not provided. please use 'stungun.get(key)' first");
     } else {
-      console.log("this.gun.path:", this.gun.path);
       this.gun.value = value;
       const ack = await this.putValue();
       if (cb) {
@@ -78,6 +80,8 @@ class Stungun {
     } else {
       this.gun.value = value;
       const ack = await this.setValue();
+      const event = new Event(this.gun.path);
+      window.dispatchEvent(event);
       if (cb) {
         cb(ack);
       }
@@ -89,17 +93,38 @@ class Stungun {
   */
   async once(cb: (value: any, key: string) => void) {
     this.value = await this.getValue();
-    if (!this.value) return null;
-    Object.keys(this.value).forEach((key) => {
-      cb(this.value[key], key);
-    });
+    if (!this.value || !this.gun) return null;
+    callbackEachKey(this.value, cb);
   }
 
   /*
     Grabs the value(s) at the key on the path, and subscribes to any changes, performing the callback each time a value comes in.
   */
   async on(cb: (value: any, key: string) => void) {
-    // this.value =
+    // return the data first
+    this.value = await this.getValue();
+    console.log("this.graph", this.graph);
+    this.graph = this.value;
+    if (!this.value || !this.gun) return null;
+    callbackEachKey(this.value, cb);
+
+    // listen for state changes (local storage changes)
+    window.addEventListener(this.gun.path, async () => {
+      // compare with gun.graph and save the changes
+      this.value = await this.getValue();
+      console.log("this.value", this.value);
+      let changes: any = {};
+      Object.keys(this.value).filter((key) => {
+        if (!Object.keys(this.graph).includes(key)) {
+          changes[key] = this.value[key];
+        }
+      });
+      console.log("changes", changes);
+      // emit the changes
+      this.graph = this.value;
+
+      callbackEachKey(changes, cb);
+    });
   }
 
   private async getValue() {
@@ -121,7 +146,6 @@ class Stungun {
           typeof this.gun.value === "object"
             ? JSON.stringify(this.gun.value)
             : JSON.stringify({ [uuidv4()]: this.gun.value });
-
         localStorage.setItem(this.gun.path, value);
         resolve(new Ack(Date.now(), true));
       }
@@ -136,6 +160,9 @@ class Stungun {
         // we get the value(s) at the path, and then append our new value
         const values = Object.create({});
         await this.once((value, key) => (values[key] = value));
+        // this is cool. We can emit our own custom event here, and listen for it in our subscription methods.
+        const event = new Event("stateChange");
+        document.dispatchEvent(event);
         values[uuidv4()] = this.gun.value;
         this.put(values);
         resolve(new Ack(Date.now(), true));
@@ -145,3 +172,10 @@ class Stungun {
 }
 
 export default Stungun;
+
+// utils; move these out eventually
+function callbackEachKey(value: any, cb: (value: any, key: string) => void) {
+  Object.keys(value).forEach((key) => {
+    cb(value[key], key);
+  });
+}

@@ -28,7 +28,7 @@ function App() {
   useEffect(() => {
     // so that we can do async stuff in our useEffect
     (async () => {
-      stungun.get("chat-messages").once((msg) => {
+      stungun.get("chat").on((msg) => {
         console.log(msg);
         dispatch({ from: "me", body: msg });
       });
@@ -36,7 +36,9 @@ function App() {
   }, []);
 
   const sendMessage = async () => {
-    stungun.get("chat-messages").set(msgText, (ack) => console.log("ack", ack));
+    stungun
+      .get("chat")
+      .set(msgText, (ack) => console.log("ack from set:", ack));
   };
   return (
     <div>
