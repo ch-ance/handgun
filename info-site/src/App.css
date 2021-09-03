@@ -1,0 +1,30 @@
+
+* {
+  font-size: 62.5%;
+}
+.app {
+  width: 150rem;
+}
+h1 {
+  text-align: center;
+  font-size: 7rem;
+}
+
+section {
+  padding: 2rem 10rem;
+  font-size: 3rem;
+  letter-spacing: 0.25rem;
+  line-height: 3.5rem;
+}
+
+section h2 { 
+  font-size: 5rem;
+}
+
+section h3 {
+  font-size: 4rem;
+}
+
+section aside {
+  padding-top: 2rem;
+}

@@ -1,7 +1,7 @@
 import React, { useEffect } from "react";
 import { useReducer } from "react";
 import { ReducerState } from "react";
-import Stungun from "./stungun/dist";
+import Stungun from "./stungun/src";
 type Message = {
   from: string;
   body: string;
@@ -19,17 +19,19 @@ const reducer = (state: { messages: Message[] }, message: Message) => {
 
 function App() {
   const [state, dispatch] = useReducer(reducer, initialState);
+  const stungunOpts = {
+    apiKey: process.env.REACT_APP_STUNGUN_API_KEY || "",
+  };
 
-  const stungun = new Stungun(process.env.REACT_APP_STUNGUN_API_KEY);
+  const stungun = new Stungun(stungunOpts);
 
   useEffect(() => {
+    // so that we can do async stuff in our useEffect
     (async () => {
-      const data = await stungun.get("chat-messages").on((message: string) => {
-        console.log(message);
-      });
-
-      console.log(data);
+      stungun.get("chat-messages").then((stungun) => stungun.once(console.log));
+      stungun.put("heylo");
     })();
+    //
   }, []);
   return (
     <div>

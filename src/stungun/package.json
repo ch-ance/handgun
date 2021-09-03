@@ -19,6 +19,6 @@
     "tsc-watch": "^4.5.0"
   },
   "scripts": {
-    "dev": "tsc-watch src/index.ts --outDir ./dist"
+    "dev": "tsc-watch"
   }
 }

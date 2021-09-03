@@ -1,6 +1,16 @@
 ### What is this?
 Handgun is a way of distributing data peer-to-peer using webrtc. 
 
+#### Developer Journal
+>   we need a way to carry information over through chains, 
+    while not storing that data directly onto the Stungun instance.
+
+    This way, we can do `stungun.get('key').put('value');
+    and `.get('key')` doesn't get mutated for the next time we 
+    want to use Stungun.
+
+    This is the motivation for using ChainData
+
 ### Different Methodologies
 I can see two possible design systems that would vary in difficulty/simplicity and performance. <br/>
 Both methods involve every peer on the network being ultimately connected through a series of peers, but they differ in performance.
