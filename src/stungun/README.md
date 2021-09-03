@@ -1,5 +1,5 @@
 ### What is this?
-Handgun is a way of distributing data peer-to-peer using webrtc. 
+Stungun is a way of distributing data peer-to-peer using webrtc. 
 
 #### Developer Journal
 >   we need a way to carry information over through chains, 
