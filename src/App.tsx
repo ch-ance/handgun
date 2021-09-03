@@ -28,13 +28,16 @@ function App() {
   useEffect(() => {
     // so that we can do async stuff in our useEffect
     (async () => {
-      stungun.get("chat-messages").once(console.log);
-      stungun.get("chat-messages").put("heyey");
+      stungun.get("chat-messages").once((msg) => {
+        console.log(msg);
+        dispatch({ from: "me", body: msg });
+      });
     })();
-    //
   }, []);
 
-  const sendMessage = async () => {};
+  const sendMessage = async () => {
+    stungun.get("chat-messages").put(msgText, (ack) => console.log("ack", ack));
+  };
   return (
     <div>
       <h1>handgun messages</h1>

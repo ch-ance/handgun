@@ -18,8 +18,14 @@ export interface StungunOptions {
   connection?: StungunConnection;
 }
 
-type Ack = {};
-
+class Ack {
+  timestamp: number;
+  success: boolean;
+  constructor(timestamp: number, success: boolean) {
+    this.timestamp = timestamp;
+    this.success = success;
+  }
+}
 class StungunConnection {
   constructor(peer: Peer) {}
 }
@@ -54,29 +60,42 @@ class Stungun {
     return new Stungun({ gun: _this });
   }
 
-  async put(value: any, cb?: Ack) {
+  /*
+    Assigns a value to the path. Takes an optional callback that has an acknowledgement showing whether the put was successful, as well as the timestamp it was inserted
+  */
+  async put(value: any, cb?: (ack: Ack) => void) {
     if (!this.gun?.path) {
       throw new Error("path not provided. please use 'stungun.get(key)' first");
     } else {
       console.log("this.gun.path:", this.gun.path);
       this.gun.value = value;
       const ack = await this.putValue();
-      console.log("ack", ack);
+      if (cb) {
+        cb(ack);
+      }
     }
   }
 
-  async once(cb: (item: any) => void) {
-    this.value = await this.getValue();
-    if (typeof this.value === "object" && this.value !== null) {
-      // if there are multiple entries here (meaning the value is an object), perform the callback on each.
-      // does this make sense? should it always be an object? ({key: key})
-      Object.keys(this.value).forEach((value) => {
-        cb(value);
-      });
+  async set(value: any, cb?: (ack: Ack) => void) {
+    if (!this.gun?.path) {
+      throw new Error("path not provided. use `stungun.get(key)` first");
     } else {
-      // otherwise, perform the callback on the entry
-      cb(this.value);
+      this.gun.value = value;
+      // const ack = this.setValue();
+      if (cb) {
+        // cb(ack);
+      }
     }
+  }
+
+  /*
+    Grabs the value(s) at the key on the path. Performs the callback over the value(s).
+  */
+  async once(cb: (value: any) => void) {
+    this.value = await this.getValue();
+    Object.keys(this.value).forEach((_value) => {
+      cb(_value);
+    });
   }
 
   private async getValue() {
@@ -84,24 +103,35 @@ class Stungun {
       if (!this.gun?.path) {
         reject("no path. Need to use `.get(key)` first");
       } else {
-        resolve(
-          await JSON.parse(localStorage.getItem(this.gun.path) as string)
-        );
+        resolve(JSON.parse(localStorage.getItem(this.gun.path) as string));
       }
     });
   }
 
-  private async putValue() {
+  private async putValue(): Promise<Ack> {
     return new Promise(async (resolve, reject) => {
       if (!this.gun?.path || !this.gun?.value) {
-        reject("need path. use gun.get() first");
+        reject(new Ack(Date.now(), false));
       } else {
-        resolve(
-          localStorage.setItem(this.gun.path, JSON.stringify(this.gun.value))
+        localStorage.setItem(
+          this.gun.path,
+          JSON.stringify({ [this.gun.value]: this.gun.value })
         );
+        resolve(new Ack(Date.now(), true));
       }
     });
   }
+
+  // private async setValue(): Promise<Ack> {
+  //   return new Promise(async (resolve, reject) => {
+  //     if (!this.gun?.path || !this.gun?.value) {
+  //       reject(new Ack(Date.now(), false));
+  //     } else {
+  //       const values = {};
+  //       // this.once(value => values[value])
+  //     }
+  //   });
+  // }
 }
 
 export default Stungun;
