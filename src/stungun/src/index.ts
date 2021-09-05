@@ -1,3 +1,5 @@
+import Gun from "gun";
+import { IGunChainReference } from "gun/types/chain";
 import Peer from "peerjs";
 import { v4 as uuidv4 } from "uuid";
 
@@ -13,8 +15,33 @@ class Ack {
     this.success = success;
   }
 }
-class StungunConnection {
-  constructor(peer: Peer) {}
+class StunConnection {
+  peer: Peer;
+  gun: IGunChainReference;
+  dataChannels: Peer.DataConnection[];
+  constructor(peer: Peer) {
+    console.log("creating a new stunconnection");
+    this.peer = peer;
+    this.dataChannels = [];
+    this.gun = new Gun({ peers: ["http://localhost:8765/gun"] });
+    this.connectWithProphet();
+  }
+
+  async connectWithProphet() {
+    console.log("connecting with a prophet...");
+    this.gun.get("oaifmsef").once((data) => console.log("oaifmsef", data));
+
+    // get the Network Graph using Gun.js
+    this.gun.get("connecttome").once((data) => {
+      console.log("data", data);
+      if (!data?.peerId) {
+        console.log("I AM GOD, DESTROYER OF WORLDS");
+        // start listening for data connection calls
+        // tell the world that we are God
+        this.gun.get("oaifmsef").put({ peerId: this.peer.id });
+      }
+    });
+  }
 }
 
 class Stungun {
@@ -25,10 +52,10 @@ class Stungun {
   value?: any;
   graph?: any;
   gun?: Stungun;
-  connection?: StungunConnection;
+  connection: StunConnection;
 
   constructor(opts?: StungunOptions, gun?: Stungun) {
-    this.apiKey = opts?.apiKey || "";
+    this.apiKey = opts?.apiKey || gun?.apiKey || "";
     this.peer =
       gun?.peer ||
       new Peer({ host: "localhost", port: 9000, path: "/stungun" });
@@ -36,21 +63,24 @@ class Stungun {
     this.value = gun?.value;
     this.graph = gun?.graph;
     this.gun = gun;
-    this.connection = gun?.connection || new StungunConnection(this.peer);
+    this.connection = gun?.connection || new StunConnection(this.peer);
   }
 
-  /*
+  /**
     Appends a key to the path. Returns a Stungun instance.
+    @param key a string to add to the path that you are referencing.
   */
   get(key: string) {
     // How else can you copy an object? Object.create() doesn't transfer all of the properties, and `const _this = this` assigns by reference, mutating the original object
     const _this = { ...this };
+    console.log("GETTING!!");
+    console.log("this in get", this);
     _this.path = _this.path + key;
 
     return new Stungun({}, _this);
   }
 
-  /*
+  /**
     Assigns a value to the path. Takes an optional callback that has an acknowledgement showing whether the put was successful, as well as the timestamp it was inserted
   */
   async put(value: any, cb?: (ack: Ack) => void) {
@@ -65,6 +95,12 @@ class Stungun {
     }
   }
 
+  /**
+   *
+   * Adds a value to a Set. Uses `.put()` under the hood.
+   *
+   * @returns an acknowledgement with a timestamp and success boolean.
+   */
   async set(value: any, cb?: (ack: Ack) => void) {
     if (!this.gun?.path) {
       throw new Error("path not provided. use `stungun.get(key)` first");
@@ -72,6 +108,7 @@ class Stungun {
       this.gun.value = value;
       const ack = await this.setValue();
       const event = new Event(this.gun.path);
+      // TODO: emit this event to the entire network
       window.dispatchEvent(event);
       if (cb) {
         cb(ack);
@@ -79,7 +116,14 @@ class Stungun {
     }
   }
 
-  /*
+  /**
+   * Start broadcasting a live stream.
+   * @param stream a MediaStream object. A stream of media content. A stream consists of several tracks such as video or audio tracks. Each track is specified as an instance of MediaStreamTrack.
+   */
+
+  async startLiveStreaming(stream: MediaStream) {}
+
+  /**
     Grabs the value(s) at the key on the path. Performs the callback over the value(s).
   */
   async once(cb: (value: any, key: string) => void) {
@@ -88,7 +132,7 @@ class Stungun {
     callbackEachKey(this.value, cb);
   }
 
-  /*
+  /**
     Grabs the value(s) at the key on the path, and subscribes to any changes, performing the callback each time a value comes in.
   */
   async on(cb: (value: any, key: string) => void) {
@@ -100,6 +144,7 @@ class Stungun {
     callbackEachKey(this.value, cb);
 
     // listen for state changes (local storage changes)
+    // TODO: Listen to this event on the entire network, not just the window
     window.addEventListener(this.gun.path, async () => {
       // compare with gun.graph and save the changes
       this.value = await this.getValue();
@@ -110,10 +155,9 @@ class Stungun {
           changes[key] = this.value[key];
         }
       });
-      console.log("changes", changes);
-      // emit the changes
+      // callback on the changes
       this.graph = this.value;
-
+      console.log("this.graph", this.graph);
       callbackEachKey(changes, cb);
     });
   }
@@ -166,6 +210,7 @@ export default Stungun;
 
 // utils; move these out eventually
 function callbackEachKey(value: any, cb: (value: any, key: string) => void) {
+  console.log("value in callbackEachKey:", value);
   Object.keys(value).forEach((key) => {
     cb(value[key], key);
   });
